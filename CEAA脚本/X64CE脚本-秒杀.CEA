@@ -1,0 +1,37 @@
+
+[ENABLE]
+
+
+ 
+ 
+aobscanmodule(fast_killINJECT,TestDemoX64.exe,49 29 5D 00 48 8B 45 28)
+alloc(newmem,$1000,"TestDemoX64.exe"+2B255F)
+
+label(code)
+label(return)
+
+newmem:
+//一次扣敌方50000血
+  mov rbx,#50000
+code:
+  sub [r13+00],rbx
+  mov rax,[rbp+28]
+  jmp return
+
+fast_killINJECT:
+  jmp newmem
+  nop
+  nop
+  nop
+return:
+registersymbol(fast_killINJECT)
+
+[DISABLE]
+
+fast_killINJECT:
+  db 49 29 5D 00 48 8B 45 28
+
+unregistersymbol(fast_killINJECT)
+dealloc(newmem)
+
+

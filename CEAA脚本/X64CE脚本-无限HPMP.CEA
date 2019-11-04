@@ -1,0 +1,41 @@
+
+
+[ENABLE]
+
+
+ 
+ 
+aobscanmodule(inf_hpmp_INJECT,TestDemoX64.exe,48 29 37 49 29 5D 00)
+alloc(newmem,$1000,"TestDemoX64.exe"+2B255C)
+
+label(code)
+label(return)
+
+newmem:
+
+  //保持5000 Mp 6000 HP
+  mov [rdi+8],#5000
+  mov [rdi],#6000
+  //攻击受到伤害改0
+  mov rsi,#0
+code:
+  sub [rdi],rsi
+  sub [r13+00],rbx
+  jmp return
+
+inf_hpmp_INJECT:
+  jmp newmem
+  nop
+  nop
+return:
+registersymbol(inf_hpmp_INJECT)
+
+[DISABLE]
+
+inf_hpmp_INJECT:
+  db 48 29 37 49 29 5D 00
+
+unregistersymbol(inf_hpmp_INJECT)
+dealloc(newmem)
+
+

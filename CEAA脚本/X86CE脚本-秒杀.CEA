@@ -1,0 +1,31 @@
+
+[ENABLE]
+
+ 
+aobscanmodule(fast_kill_INJECT,TestDemoX86.exe,89 03 89 53 04 8B 87)
+alloc(newmem,$1000)
+
+label(code)
+label(return)
+
+newmem:
+  //将敌方HP改成0,直接杀死
+  mov eax,0
+code:
+  mov [ebx],eax
+  mov [ebx+04],edx
+  jmp return
+
+fast_kill_INJECT:
+  jmp newmem
+return:
+registersymbol(fast_kill_INJECT)
+
+[DISABLE]
+
+fast_kill_INJECT:
+  db 89 03 89 53 04
+
+unregistersymbol(fast_kill_INJECT)
+dealloc(newmem)
+

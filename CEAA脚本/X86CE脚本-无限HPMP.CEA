@@ -1,0 +1,36 @@
+
+[ENABLE]
+
+
+ 
+ 
+aobscanmodule(inf_hpmp_INJECT,TestDemoX86.exe,89 06 89 56 04 8B)
+alloc(newmem,$1000)
+
+label(code)
+label(return)
+
+newmem:
+  //5000 mp 6000hp
+  mov [esi+8],#5000
+  mov eax,#6000
+
+code:
+  mov [esi],eax
+  mov [esi+04],edx
+  jmp return
+
+inf_hpmp_INJECT:
+  jmp newmem
+return:
+registersymbol(inf_hpmp_INJECT)
+
+[DISABLE]
+
+inf_hpmp_INJECT:
+  db 89 06 89 56 04
+
+unregistersymbol(inf_hpmp_INJECT)
+dealloc(newmem)
+
+

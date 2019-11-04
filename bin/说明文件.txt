@@ -1,0 +1,53 @@
+文件说明:
+
+TSF注入器.exe				注入器				源码:暂不开源
+TestDemoX64.exe				测试程序64位			源码:\code\test_exe
+TestDemoX86.exe				测试程序32位			源码:\code\test_exe
+
+Test_hackdll/Test2x64.dll	测试注入用DLL64位		源码:\code\test_dll\Test2
+Test_hackdll/Test2x86.dll	测试注入用DLL32位		源码:\code\test_dll\Test2
+Test_hackdll/CEAAx64.dll	测试CE脚本注入DLL64位	源码:暂不开源
+Test_hackdll/CEAAx86.dll	测试CE脚本注入DLL32位	源码:暂不开源
+
+
+测试DLL导出函数说明:
+Test2.dll  	(多数程序都可以注入.)
+	OpenFormWindow   	在目标程序上打开一个新窗口(仅演示,没啥功能,要功能自己做)
+	Change_From_Text		改变目标窗口标题(凑数的功能)
+	HOME_KEY_FUN_1	 	让目标程序响应HOME按键(按下Home执行DLL一个函数)
+	Hook_MessageBox	 	hook 目标程序 MessageBox消息.改变MessageBox内容.
+	New_Button		hook 目标程序窗口事件 . 在目标程序新建一个按钮,并让按钮实现DLL函数
+
+CEAA.dll	(因为CEAA脚本有针对测试程序写的脚本,所以仅仅注入测试程序有效.)
+	CEAA_fast_kill		执行CEAA脚本   让测试程序中 [敌方]在一击中死去
+	CEAA_inf_hp_mp		执行CEAA脚本   让测试程序中 [友方]HP MP 变成无限.
+
+
+----------------------------------------------------------------------------
+
+TSF注入器是一款利用输入法(TSF模式)注入工具,同时支持32位程序/64位程序注入.
+
+
+具体原理:
+https://www.yge.me/public/addons/yakeblog/detail/show/id/47.html
+
+注入器会自动识别运行程序是32位还是64位,
+也会自动识别注入的DLL是32位还是64位.
+
+使用:
+1,打开注入器,选择目标程序,以及注入的DLL
+2,点击注入器上的[注入]按钮.
+3,在目标程序上切换输入法.自动完成注入.
+
+
+注意:
+1. 32位DLL只能注入32位目标程序中,64位只能注入64位.
+2. 需要手动切换输入法注入.
+3. 需要有窗口程序才能注入.
+4. 
+
+
+
+2019/11/04
+Y.A.K.E
+www.yge.me
