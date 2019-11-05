@@ -34,6 +34,14 @@ type
   end;
   PMainWindow =^ TMainWindow;
 
+
+type
+   PEnumInfo = ^TEnumInfo;
+   TEnumInfo = record
+      ProcessID: DWORD;
+      HWND: THandle;
+   end;
+
 var
 
 
@@ -98,6 +106,84 @@ end;
 
 
 
+
+function getparenthwd(var tmpHWND:HWND):DWORD;
+var
+tmp:HWND;
+tmp2:HWND;
+begin
+    tmp2:=0;
+    tmp:=GetParent(tmpHWND);
+
+
+     while tmp >0 do
+     begin
+         tmp:=getparenthwd(tmp);
+     end;
+    if tmp <> 0  then tmp2:=tmp;
+
+    Result:=tmp2;
+end;
+
+
+   function G_EnumWindowsProc(Wnd: HWND; var EI: TEnumInfo): Bool; stdcall;
+   var
+      PID: DWORD;
+  h: THandle;
+  arr: array[0..254] of Char;
+  tmpIsFlag:Boolean;
+  tmpThreadID:THandle;
+   begin
+      Result := True;
+      GetWindowThreadProcessID(Wnd, @PID);
+
+
+Result := (PID <> EI.ProcessID) or
+(not IsWindowVisible(WND)) or
+(not IsWindowEnabled(WND));
+
+      if not Result then
+        begin
+          h := getparenthwd(WND);
+
+
+          if h>0 then
+          begin
+            EI.HWND := h;
+          end
+            else
+            begin
+              EI.HWND := WND;
+            end;
+        end;
+
+
+
+//      Result := (PID <> EI.ProcessID) or
+//         (not IsWindowVisible(WND)) or
+//         (not IsWindowEnabled(WND));
+//      if not Result then EI.HWND := WND; //break on return FALSE
+   end;
+
+function G_FindMainWindow(PID: DWORD): DWORD;
+   var
+      EI: TEnumInfo;
+   begin
+      EI.ProcessID := PID;
+      EI.HWND := 0;
+      EnumWindows(@G_EnumWindowsProc, Integer(@EI));
+      Result := EI.HWND;
+   end;
+
+
+//https://codeoncode.blogspot.com/2016/12/get-processid-by-programname-include.html
+function GetHWndByPID(const hPID: THandle): THandle;
+begin
+   if hPID <> 0 then
+      Result := G_FindMainWindow(hPID)
+   else
+      Result := 0;
+end;
 
 
 
@@ -421,7 +507,7 @@ begin
         {$IFEND}
 
         //获取目标程序顶级窗口句柄
-        P_hwd:=FindMainWindow(GetCurrentProcessId);
+        P_hwd:=GetHWndByPID(GetCurrentProcessId);
 
         writeWorkLog('获取顶级窗口句柄:' +  inttostr(P_hwd));
       end;
