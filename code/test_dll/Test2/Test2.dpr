@@ -59,8 +59,7 @@ timer_ptr_2:UIntPtr;
 timer_ptr_1:UIntPtr;
 timer_ptr_0:UIntPtr;
 
-fun_var_pid:DWORD;
-fun_var_hwd:HWND;
+
 
 MainHook:Uint64;
 
@@ -188,41 +187,6 @@ end;
 
 
 
-function _IsMainWindow(AHandle: HWND): BOOL;
-begin
-  Result :=(GetWindow(AHandle, GW_OWNER) = 0) and (IsWindowVisible(AHandle));
-end;{ IsMainWindow }
-
-function _fFindMainWindow(tmphWnd: DWORD; lParam: integer=0): BOOL; stdcall;
-var
-  vProcessID: DWORD;
-begin
-  GetWindowThreadProcessId(tmphWnd, addr(vProcessID));
-  //and IsMainWindow(hWnd)
-
-  if (fun_var_pid = vProcessID) and _IsMainWindow(tmphWnd) then
-  begin
-    //OutputDebugString(pwidechar('入口pid: '+inttostr(fun_var_pid) + ' 枚举句柄: ' + inttostr(tmphWnd)));
-    fun_var_hwd := tmphWnd;
-    Result := false;
-  end else Result := True;
-end;
-
-//https://www.iteye.com/blog/huobengle-1382392
-//判断是否主窗口
-//这个也不知道原作者是谁,我就看好多地方抄来抄去没有原作者.
-function FindMainWindow(AProcessID: DWORD): THandle;
-begin
-  fun_var_pid:= AProcessID;
-  fun_var_hwd:= 0 ;
-  EnumWindows(@_fFindMainWindow,integer(0));
-  Result := fun_var_hwd;
-end;{ FindMainWindow }
-
-
-
-
-
 
 
 
@@ -250,12 +214,13 @@ end;
 
 
 
-//按HOME激活函数,一次性
+//按HOME激活函数
 //通过GetAsyncKeyState判断按键是否按下
-//这个体验不是很好
+//这个体验不如系统热键
 procedure HomeFunTimerProc(hwnd:HWND;uMsg,idEvent:UINT;dwTime:DWORD); stdcall;
 begin
-  if GetAsyncKeyState(Vk_HOME)<> 0 then
+  //位运算 与 判断HOME按键状态
+  if (GetAsyncKeyState(Vk_HOME) and 1 ) <> 0 then
   begin
     //KillTimer(P_hwd,2);  //如果只需要响应一次就就需要关闭计时器
     showmessage('按下了HOME');
@@ -342,6 +307,20 @@ end;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function MessageBoxCallBack(hWnd: HWND; lpText, lpCaption: PChar; uType: UINT): Integer; stdcall;
 var
   S: string;
@@ -350,7 +329,6 @@ begin
       + lpText;
   Result := MessageBoxNext(hWnd, PChar(S), lpCaption, uType);
 end;
-
 
 
 function Hook_MessageBox():integer;stdcall;
@@ -377,28 +355,6 @@ end;
 
 
 
-//控件窗口句柄 转vcl控件实例
-//https://www.cnblogs.com/devcjq/articles/7482467.html
-function GetInstanceFromhWnd(const hWnd: Cardinal): TWinControl;
-type
-  PObjectInstance = ^TObjectInstance;
-
-  TObjectInstance = packed record
-    Code: Byte;            { 短跳转 $E8 }
-    Offset: Integer;       { CalcJmpOffset(Instance, @Block^.Code); }
-    Next: PObjectInstance; { MainWndProc 地址 }
-    Self: Pointer;         { 控件对象地址 }
-  end;
-var
-  wc: PObjectInstance;
-begin
-  Result := nil;
-  wc     := Pointer(GetWindowLong(hWnd, GWL_WNDPROC));
-  if wc <> nil then
-  begin
-    Result := wc.Self;
-  end;
-end;
 
 
 
@@ -406,6 +362,16 @@ end;
 
 
 
+
+
+
+
+
+
+
+
+
+//响应DLL动态创建按钮事件
 procedure CustomButtonClick();
 begin
   showmessage('DLL创建按钮被响应');
@@ -420,11 +386,6 @@ function HookProc(hHandle: THandle; uMsg: Cardinal;
 var K, C: Word;  // wndproc
 begin
 
-//  if uMsg > 0 then
-//  begin
-//     writeWorkLog('创建按钮:Hook消息回调msg:'+inttostr(uMsg) +'Wp:' + inttostr( wParam) + 'Lp:' +inttostr( lParam ) );
-//  end;
-
   if uMsg = WM_COMMAND then
   begin
     if lParam = hButton then
@@ -434,15 +395,6 @@ begin
 
   end;
 
-
-//  if uMsg = WM_HOTKEY then
-//     begin
-//        K := HIWORD(lParam);
-//        C := LOWORD(lParam);
-//        // press Ctrl + Alt + Del
-//        if (C and VK_CONTROL<>0) and (C and VK_MENU <>0) and ( K = VK_Delete)
-//           then Exit;   // disable Ctrl + Alt + Del
-//     end;
   Result := CallWindowProc(OldAppProc, hHandle,uMsg, wParam, lParam);
 end;
 
@@ -486,6 +438,15 @@ begin
 
   Result:=0;
 end;
+
+
+
+
+
+
+
+
+
 
 
 
